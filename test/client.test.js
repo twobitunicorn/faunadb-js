@@ -26,6 +26,15 @@ describe('Client', () => {
     })
   })
 
+  test("omits the port value if it's falsy", () => {
+    const client = new Client({
+      secret: 'FAKED',
+      port: 0,
+    })
+
+    expect(client._http._baseUrl.endsWith(':0')).toBeFalsy()
+  })
+
   test('paginates', () => {
     return createDocument().then(function(document) {
       return client.paginate(document.ref).each(function(page) {
@@ -203,6 +212,23 @@ describe('Client', () => {
     )
   })
 
+  test('http2 session released', async () => {
+    const http2SessionIdleTime = 500
+    const client = util.getClient({
+      http2SessionIdleTime: http2SessionIdleTime,
+    })
+
+    await client.query(query.Now())
+
+    const internalSessionMap = client._http._adapter._sessionMap
+
+    expect(Object.keys(internalSessionMap).length).toBe(1)
+
+    await new Promise(resolve => setTimeout(resolve, http2SessionIdleTime + 1))
+
+    expect(Object.keys(internalSessionMap).length).toBe(0)
+  })
+
   test('Unauthorized error has the proper fields', async () => {
     const client = new Client({ secret: 'bad-key' })
 
@@ -235,6 +261,32 @@ describe('Client', () => {
     expect(response.name).toEqual('BadRequest')
     expect(response.message).toEqual(errors[0].code)
     expect(response.description).toEqual(errors[0].description)
+  })
+
+  test('default headers has been applied', async () => {
+    const mockedFetch = mockFetch()
+    const clientWithDefaultTimeout = new Client({
+      fetch: mockedFetch,
+    })
+
+    await clientWithDefaultTimeout.query(query.Databases())
+
+    expect(mockedFetch).toBeCalledTimes(1)
+    expect(
+      mockedFetch.mock.calls[0][1].headers['X-FaunaDB-API-Version']
+    ).toBeDefined()
+
+    const driverEnvHeader = mockedFetch.mock.calls[0][1].headers['X-Driver-Env']
+    const requiredKeys = [
+      'driver',
+      'driverVersion',
+      'languageVersion',
+      'env',
+      'os',
+    ]
+    expect(
+      requiredKeys.every(key => driverEnvHeader.includes(key))
+    ).toBeDefined()
   })
 })
 

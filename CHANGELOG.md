@@ -1,3 +1,46 @@
+## 4.1.3
+
+- Revert X-Query-Timeout improvement (will be introduced in a major release)
+- Revert http2 session idle time (will be changed to a manual handling by a 'close' method in a major release)
+
+## 4.1.2
+
+- Expose API version as a Client's static property
+- Fix Stream API type definition (TypeScript)
+- Always pass X-Query-Timeout
+- Combine timeout & queryTimeout
+- Set http2 session idle time
+- Omit the port value if it's falsy
+- Expr to FQL logic fixes
+
+## 4.1.1
+
+- Fallback to HTTP1 in case old NodeJS version doesn't support it
+
+## 4.1.0
+
+- Add runtime env headers
+- Enhance isNodeJS recognition
+- Add `observer` option for `client.query`
+- Add NodeJS HTTP2 support
+
+## 4.0.3
+
+- Fix build for webpack
+
+## 4.0.2
+
+- Use AbortController polyfill
+
+## 4.0.1
+
+- Fix null in zero-argument functions for toFQL stringification
+- Fix http request timeout not passed to `fetch` function
+- Fix stream `end` event shallowed for NodeJS
+- Improve Typescript definitions
+- Add exp.toFQL
+- Reduce web bundle size
+
 ## 4.0.0
 
 - Adds AccessProvider() support for authenticating with external auth providers (ex. Auth0, Okta)
